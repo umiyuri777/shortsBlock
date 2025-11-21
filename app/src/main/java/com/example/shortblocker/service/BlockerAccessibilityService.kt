@@ -10,6 +10,12 @@ import com.example.shortblocker.data.SettingsRepository
 import com.example.shortblocker.detector.PlatformDetectorManager
 import com.example.shortblocker.error.ErrorHandler
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
@@ -58,6 +64,13 @@ class BlockerAccessibilityService : AccessibilityService() {
     private lateinit var blockActionManager: BlockActionManager
 
     private var isServiceRunning = false
+    
+    /**
+     * Coroutine scope for async event processing.
+     * Uses SupervisorJob to prevent child coroutine failures from canceling the entire scope.
+     * Requirement 6.1, 6.2: Optimize performance with async processing
+     */
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     /**
      * Called when the service is connected and ready to receive events.
@@ -129,26 +142,46 @@ class BlockerAccessibilityService : AccessibilityService() {
     }
     
     /**
-     * Internal method to process the event after debouncing
+     * Internal method to process the event after debouncing.
+     * Uses coroutines for async processing to optimize performance.
+     * 
+     * Requirement 6.1, 6.2: Async processing with Dispatchers.Default for detection
+     * and Dispatchers.Main for UI actions
      */
     private fun processEventInternal(event: AccessibilityEvent) {
-        // Process event through AccessibilityEventProcessor
-        val appContext = eventProcessor.processEvent(event)
-        
-        if (appContext != null) {
-            Log.d(TAG, "AppContext extracted: ${appContext.packageName}, " +
-                      "nodes=${appContext.nodeTree.size}")
-            
-            // Detect short video content through PlatformDetectorManager
-            val detectionResult = platformDetectorManager.detectShortVideo(appContext)
-            
-            if (detectionResult != null && detectionResult.isShortVideo) {
-                Log.i(TAG, "Short video detected: platform=${detectionResult.platform}, " +
-                          "method=${detectionResult.detectionMethod}, " +
-                          "confidence=${detectionResult.confidence}")
+        // Launch coroutine for async processing
+        serviceScope.launch {
+            try {
+                // Process event through AccessibilityEventProcessor (on Default dispatcher)
+                val appContext = eventProcessor.processEvent(event)
                 
-                // Execute block action through BlockActionManager
-                blockActionManager.executeBlockAction(detectionResult, appContext)
+                if (appContext != null) {
+                    Log.d(TAG, "AppContext extracted: ${appContext.packageName}, " +
+                              "nodes=${appContext.nodeTree.size}")
+                    
+                    // Detect short video content through PlatformDetectorManager
+                    // This runs on Dispatchers.Default for CPU-intensive work
+                    val detectionResult = platformDetectorManager.detectShortVideo(appContext)
+                    
+                    if (detectionResult != null && detectionResult.isShortVideo) {
+                        Log.i(TAG, "Short video detected: platform=${detectionResult.platform}, " +
+                                  "method=${detectionResult.detectionMethod}, " +
+                                  "confidence=${detectionResult.confidence}")
+                        
+                        // Execute block action on Main dispatcher (UI operations)
+                        withContext(Dispatchers.Main) {
+                            blockActionManager.executeBlockAction(detectionResult, appContext)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error processing event asynchronously", e)
+                errorHandler.handleError(
+                    com.example.shortblocker.error.BlockerError.DetectionError(
+                        com.example.shortblocker.data.Platform.UNKNOWN,
+                        e
+                    )
+                )
             }
         }
     }
@@ -169,6 +202,9 @@ class BlockerAccessibilityService : AccessibilityService() {
     override fun onDestroy() {
         super.onDestroy()
         isServiceRunning = false
+        
+        // Cancel all coroutines
+        serviceScope.cancel()
         
         // Clean up block action manager
         if (::blockActionManager.isInitialized) {

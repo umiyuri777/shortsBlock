@@ -234,15 +234,15 @@
     - AccessibilityService へのインジェクション（手動取得）
     - _Requirements: すべて_
 
-- [ ] 12. パフォーマンス最適化の実装
+- [x] 12. パフォーマンス最適化の実装
 
-  - [ ] 12.1 キャッシング機能の追加
+  - [x] 12.1 キャッシング機能の追加
 
     - LruCache を使用した検出結果のキャッシュ
     - キャッシュキーの設計（packageName + activityName）
     - _Requirements: 6.1, 6.2_
 
-  - [ ] 12.2 非同期処理の最適化
+  - [x] 12.2 非同期処理の最適化
     - Coroutines を使用した非同期イベント処理
     - Dispatchers.Default での検出処理
     - Dispatchers.Main でのアクション実行
