@@ -134,9 +134,9 @@
     - エラーハンドリングとフォールバック
     - _Requirements: 2.1, 2.2, 2.3, 7.3_
 
-- [ ] 7. 設定管理と ConfigurationManager の実装
+- [x] 7. 設定管理と ConfigurationManager の実装
 
-  - [ ] 7.1 ConfigurationManager の実装
+  - [x] 7.1 ConfigurationManager の実装
 
     - SettingsRepository との統合
     - プラットフォーム有効/無効の管理
@@ -144,7 +144,7 @@
     - 一時無効化機能（タイマー管理）
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-  - [ ] 7.2 一時無効化タイマーの実装
+  - [x] 7.2 一時無効化タイマーの実装
     - AlarmManager または WorkManager を使用
     - 指定時間後の自動再有効化
     - 通知による状態表示
