@@ -60,6 +60,12 @@ class BlockerAccessibilityService : AccessibilityService() {
     @Inject
     lateinit var errorHandler: ErrorHandler
     
+    @Inject
+    lateinit var safeModeManager: com.example.shortblocker.error.SafeModeManager
+    
+    @Inject
+    lateinit var blockerLogger: com.example.shortblocker.error.BlockerLogger
+    
     // BlockActionManager needs to be created manually because it requires the service instance
     private lateinit var blockActionManager: BlockActionManager
 
@@ -147,16 +153,37 @@ class BlockerAccessibilityService : AccessibilityService() {
      * 
      * Requirement 6.1, 6.2: Async processing with Dispatchers.Default for detection
      * and Dispatchers.Main for UI actions
+     * Requirement 7.1, 7.2, 7.3, 7.4: Error handling and safe mode integration
      */
     private fun processEventInternal(event: AccessibilityEvent) {
         // Launch coroutine for async processing
         serviceScope.launch {
             try {
+                // Check if service is enabled
+                val isEnabled = configurationManager.isEnabled()
+                if (!isEnabled) {
+                    blockerLogger.logDebug(TAG, "Service is disabled, skipping event")
+                    return@launch
+                }
+                
+                // Check if temporarily disabled
+                val isTemporarilyDisabled = configurationManager.isTemporarilyDisabled()
+                if (isTemporarilyDisabled) {
+                    blockerLogger.logDebug(TAG, "Service is temporarily disabled, skipping event")
+                    return@launch
+                }
+                
+                // Check safe mode (Requirement 7.4)
+                if (safeModeManager.isInSafeModeNow()) {
+                    blockerLogger.logDebug(TAG, "Safe mode active, skipping event")
+                    return@launch
+                }
+                
                 // Process event through AccessibilityEventProcessor (on Default dispatcher)
                 val appContext = eventProcessor.processEvent(event)
                 
                 if (appContext != null) {
-                    Log.d(TAG, "AppContext extracted: ${appContext.packageName}, " +
+                    blockerLogger.logDebug(TAG, "AppContext extracted: ${appContext.packageName}, " +
                               "nodes=${appContext.nodeTree.size}")
                     
                     // Detect short video content through PlatformDetectorManager
@@ -168,20 +195,52 @@ class BlockerAccessibilityService : AccessibilityService() {
                                   "method=${detectionResult.detectionMethod}, " +
                                   "confidence=${detectionResult.confidence}")
                         
+                        // Log the block action (Requirement 8.2)
+                        val settings = settingsRepository.getSettings()
+                        blockerLogger.logBlockAction(
+                            platform = detectionResult.platform,
+                            detectionMethod = detectionResult.detectionMethod,
+                            actionTaken = settings.blockActionType,
+                            packageName = appContext.packageName
+                        )
+                        
                         // Execute block action on Main dispatcher (UI operations)
                         withContext(Dispatchers.Main) {
                             blockActionManager.executeBlockAction(detectionResult, appContext)
                         }
+                        
+                        // Reset error counter on successful detection and action
+                        safeModeManager.resetErrors()
                     }
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error processing event asynchronously", e)
-                errorHandler.handleError(
-                    com.example.shortblocker.error.BlockerError.DetectionError(
-                        com.example.shortblocker.data.Platform.UNKNOWN,
-                        e
-                    )
+            } catch (e: SecurityException) {
+                // Permission errors (Requirement 7.1)
+                Log.e(TAG, "Permission error processing event", e)
+                val error = com.example.shortblocker.error.BlockerError.PermissionError(
+                    permission = "ACCESSIBILITY_SERVICE or SYSTEM_ALERT_WINDOW",
+                    message = "Permission denied: ${e.message}"
                 )
+                errorHandler.handleError(error)
+                blockerLogger.logError(error, "Event processing failed due to permission")
+            } catch (e: IllegalStateException) {
+                // System state errors (Requirement 7.3)
+                Log.e(TAG, "System state error processing event", e)
+                val error = com.example.shortblocker.error.BlockerError.SystemError(
+                    message = "Invalid system state: ${e.message}",
+                    cause = e
+                )
+                errorHandler.handleError(error)
+                blockerLogger.logError(error, "Event processing failed due to system state")
+            } catch (e: Exception) {
+                // General detection errors (Requirement 7.1, 7.2)
+                Log.e(TAG, "Error processing event asynchronously", e)
+                val error = com.example.shortblocker.error.BlockerError.DetectionError(
+                    platform = com.example.shortblocker.data.Platform.UNKNOWN,
+                    context = "Event processing failed",
+                    cause = e
+                )
+                errorHandler.handleError(error)
+                blockerLogger.logError(error, "Unexpected error during event processing")
             }
         }
     }

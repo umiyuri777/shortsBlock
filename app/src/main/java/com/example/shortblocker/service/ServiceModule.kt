@@ -20,7 +20,13 @@ object ServiceModule {
     @Provides
     @Singleton
     fun provideAccessibilityEventProcessor(): AccessibilityEventProcessor {
-        return AccessibilityEventProcessor()
+        val targetPackages = setOf(
+            "com.google.android.youtube",      // YouTube
+            "com.instagram.android",            // Instagram
+            "com.zhiliaoapp.musically",         // TikTok
+            "com.ss.android.ugc.trill"          // TikTok Lite
+        )
+        return DefaultAccessibilityEventProcessor(targetPackages)
     }
 
     @Provides
