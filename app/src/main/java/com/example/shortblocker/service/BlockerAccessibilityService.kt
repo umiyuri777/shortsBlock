@@ -28,6 +28,10 @@ class BlockerAccessibilityService : AccessibilityService() {
     }
 
     private var isServiceRunning = false
+    
+    // Event processing components (Task 4)
+    private lateinit var eventProcessor: AccessibilityEventProcessor
+    private lateinit var eventDebouncer: PackageEventDebouncer
 
     /**
      * Called when the service is connected and ready to receive events.
@@ -38,6 +42,10 @@ class BlockerAccessibilityService : AccessibilityService() {
         
         Log.i(TAG, "BlockerAccessibilityService connected")
         isServiceRunning = true
+        
+        // Initialize event processing components (Task 4)
+        eventProcessor = DefaultAccessibilityEventProcessor(TARGET_PACKAGES)
+        eventDebouncer = PackageEventDebouncer(delayMs = 100L)
         
         // Configure service info programmatically (in addition to XML config)
         val info = AccessibilityServiceInfo().apply {
@@ -85,9 +93,19 @@ class BlockerAccessibilityService : AccessibilityService() {
                       "class=${event.className}")
         }
 
-        // TODO: Process event through AccessibilityEventProcessor (Task 4)
-        // TODO: Detect short video content through PlatformDetectorManager (Task 5)
-        // TODO: Execute block action through BlockActionManager (Task 6)
+        // Debounce events to optimize performance (Task 4.2)
+        eventDebouncer.debounce(packageName) {
+            // Process event through AccessibilityEventProcessor (Task 4.1)
+            val appContext = eventProcessor.processEvent(event)
+            
+            if (appContext != null) {
+                Log.d(TAG, "AppContext extracted: ${appContext.packageName}, " +
+                          "nodes=${appContext.nodeTree.size}")
+                
+                // TODO: Detect short video content through PlatformDetectorManager (Task 5)
+                // TODO: Execute block action through BlockActionManager (Task 6)
+            }
+        }
     }
 
     /**
@@ -106,6 +124,10 @@ class BlockerAccessibilityService : AccessibilityService() {
     override fun onDestroy() {
         super.onDestroy()
         isServiceRunning = false
+        
+        // Clean up debouncer
+        eventDebouncer.cancelAll()
+        
         Log.i(TAG, "BlockerAccessibilityService destroyed")
     }
 

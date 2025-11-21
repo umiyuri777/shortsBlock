@@ -49,16 +49,16 @@
     - 必要な権限の追加（SYSTEM_ALERT_WINDOW、POST_NOTIFICATIONS）
     - _Requirements: 4.1, 4.2_
 
-- [ ] 4. イベント処理とコンテキスト抽出の実装
+- [x] 4. イベント処理とコンテキスト抽出の実装
 
-  - [ ] 4.1 AccessibilityEventProcessor の実装
+  - [x] 4.1 AccessibilityEventProcessor の実装
 
     - AccessibilityEvent から AppContext を抽出
     - AccessibilityNodeInfo ツリーの構築
     - イベントフィルタリングロジック（対象パッケージのみ処理）
     - _Requirements: 4.3, 6.1, 6.3_
 
-  - [ ] 4.2 イベントデバウンサーの実装
+  - [x] 4.2 イベントデバウンサーの実装
     - 連続イベントの抑制（100ms 間隔）
     - パフォーマンス最適化
     - _Requirements: 6.1, 6.2_
