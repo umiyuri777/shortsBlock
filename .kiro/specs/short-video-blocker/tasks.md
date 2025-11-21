@@ -6,19 +6,19 @@
   - パッケージ構造の作成（service、detector、action、config、data、ui）
   - _Requirements: 4.1, 4.2_
 
-- [ ] 2. データモデルとローカルストレージの実装
-  - [ ] 2.1 Roomデータベースのセットアップ
+- [x] 2. データモデルとローカルストレージの実装
+  - [x] 2.1 Roomデータベースのセットアップ
     - AppDatabaseクラスの作成
     - SettingsEntityとBlockLogEntityの定義
     - DAOインターフェースの実装（SettingsDao、BlockLogDao）
     - _Requirements: 5.1, 5.2, 8.2_
   
-  - [ ] 2.2 データモデルクラスの作成
+  - [x] 2.2 データモデルクラスの作成
     - AppSettings、AppContext、DetectionResult、Platform、BlockActionTypeなどのdata classを定義
     - Enum定義（Platform、DetectionMethod、BlockActionType）
     - _Requirements: 5.1, 5.2_
   
-  - [ ] 2.3 SettingsRepositoryの実装
+  - [x] 2.3 SettingsRepositoryの実装
     - SettingsRepositoryインターフェースと実装クラスの作成
     - SharedPreferencesとRoomの統合
     - Flowベースの設定監視機能
