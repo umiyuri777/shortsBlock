@@ -29,6 +29,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.MainActivity" />
+
         <service
             android:name=".service.BlockerAccessibilityService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"

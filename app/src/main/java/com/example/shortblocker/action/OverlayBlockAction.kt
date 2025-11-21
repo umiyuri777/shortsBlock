@@ -9,6 +9,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
 import com.example.shortblocker.R
 import com.example.shortblocker.data.AppContext
 import com.example.shortblocker.data.DetectionResult
@@ -58,6 +60,9 @@ class OverlayBlockAction(
             val inflater = LayoutInflater.from(context)
             overlayView = inflater.inflate(R.layout.overlay_block, null)
             
+            // プラットフォーム別のアイコンと名前を設定
+            setupPlatformSpecificUI(result)
+            
             // ウィンドウパラメータを設定
             val params = WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
@@ -89,6 +94,32 @@ class OverlayBlockAction(
             // エラーが発生した場合はクリーンアップ
             overlayView = null
             throw e
+        }
+    }
+    
+    private fun setupPlatformSpecificUI(result: DetectionResult) {
+        overlayView?.let { view ->
+            val platformIcon = view.findViewById<ImageView>(R.id.platformIcon)
+            val platformName = view.findViewById<TextView>(R.id.platformName)
+            
+            when (result.platform) {
+                com.example.shortblocker.data.Platform.YOUTUBE -> {
+                    platformIcon?.setImageResource(R.drawable.ic_youtube)
+                    platformName?.text = context.getString(R.string.youtube_shorts)
+                }
+                com.example.shortblocker.data.Platform.INSTAGRAM -> {
+                    platformIcon?.setImageResource(R.drawable.ic_instagram)
+                    platformName?.text = context.getString(R.string.instagram_reels)
+                }
+                com.example.shortblocker.data.Platform.TIKTOK -> {
+                    platformIcon?.setImageResource(R.drawable.ic_tiktok)
+                    platformName?.text = context.getString(R.string.tiktok)
+                }
+                else -> {
+                    platformIcon?.setImageResource(R.drawable.ic_block)
+                    platformName?.text = "Short Video"
+                }
+            }
         }
     }
     

@@ -80,4 +80,12 @@ class ConfigurationManagerImpl @Inject constructor(
     override suspend fun clearTemporaryDisable() {
         settingsRepository.setTemporaryDisable(null)
     }
+    
+    override suspend fun setEnabled(enabled: Boolean) {
+        setServiceEnabled(enabled)
+    }
+    
+    override fun getSettings(): Flow<AppSettings> {
+        return settingsRepository.observeSettings()
+    }
 }

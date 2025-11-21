@@ -8,4 +8,57 @@
     <string name="block_message">This content is restricted by your settings</string>
     <string name="go_back">Go Back</string>
     <string name="disable_30_min">Disable 30min</string>
+    
+    <!-- Main Activity strings -->
+    <string name="service_status">Service Status</string>
+    <string name="service_enabled">Service Enabled</string>
+    <string name="blocked_platforms">Blocked Platforms</string>
+    <string name="youtube_shorts">YouTube Shorts</string>
+    <string name="instagram_reels">Instagram Reels</string>
+    <string name="tiktok">TikTok</string>
+    <string name="block_method">Block Method</string>
+    <string name="show_overlay">Show Overlay</string>
+    <string name="navigate_back">Navigate Back</string>
+    <string name="notification_only">Notification Only</string>
+    <string name="combined_action">Combined (Overlay + Notification)</string>
+    <string name="temporary_disable">Temporary Disable</string>
+    <string name="disable_for_30_min">Disable for 30 minutes</string>
+    <string name="disabled_until">Disabled until %s</string>
+    <string name="statistics">Statistics</string>
+    <string name="today">Today:</string>
+    <string name="this_week">This week:</string>
+    <string name="blocks_count">%d blocks</string>
+    <string name="settings">Settings</string>
+    
+    <!-- Settings Activity strings -->
+    <string name="permissions">Permissions</string>
+    <string name="accessibility_service">Accessibility Service</string>
+    <string name="overlay_permission">Overlay Permission</string>
+    <string name="notification_permission">Notification Permission</string>
+    <string name="enabled">Enabled</string>
+    <string name="disabled">Disabled</string>
+    <string name="granted">Granted</string>
+    <string name="not_granted">Not Granted</string>
+    <string name="open">Open</string>
+    <string name="data_management">Data Management</string>
+    <string name="clear_logs">Clear Logs</string>
+    <string name="reset_settings">Reset Settings</string>
+    <string name="app_info">App Info</string>
+    <string name="version">Version:</string>
+    <string name="total_blocks">Total Blocks:</string>
+    <string name="clear_logs_confirmation">Are you sure you want to clear all block logs? This action cannot be undone.</string>
+    <string name="reset_settings_confirmation">Are you sure you want to reset all settings to defaults? This action cannot be undone.</string>
+    <string name="clear">Clear</string>
+    <string name="reset">Reset</string>
+    <string name="cancel">Cancel</string>
+    <string name="success">Success</string>
+    <string name="logs_cleared">All logs have been cleared.</string>
+    <string name="settings_reset">Settings have been reset to defaults.</string>
+    <string name="ok">OK</string>
+    
+    <!-- Overlay strings -->
+    <string name="platform_icon">Platform Icon</string>
+    <string name="youtube_shorts_blocked">YouTube Shorts Blocked</string>
+    <string name="instagram_reels_blocked">Instagram Reels Blocked</string>
+    <string name="tiktok_blocked">TikTok Blocked</string>
 </resources>

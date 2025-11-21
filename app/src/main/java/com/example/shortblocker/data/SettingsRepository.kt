@@ -10,4 +10,5 @@ interface SettingsRepository {
     suspend fun updateBlockActionType(actionType: BlockActionType)
     suspend fun updateServiceEnabled(enabled: Boolean)
     suspend fun setTemporaryDisable(endTime: Long?)
+    suspend fun resetToDefaults()
 }

@@ -60,6 +60,11 @@ class SettingsRepositoryImpl @Inject constructor(
         saveSettings(currentSettings.copy(temporaryDisableEndTime = endTime))
     }
 
+    override suspend fun resetToDefaults() {
+        val defaultSettings = AppSettings()
+        saveSettings(defaultSettings)
+    }
+
     private suspend fun createDefaultSettings(): SettingsEntity {
         val defaultEntity = SettingsEntity()
         settingsDao.insertSettings(defaultEntity)

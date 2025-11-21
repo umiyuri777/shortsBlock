@@ -60,4 +60,14 @@ interface ConfigurationManager {
      * Clear temporary disable (re-enable the service)
      */
     suspend fun clearTemporaryDisable()
+    
+    /**
+     * Set enabled state
+     */
+    suspend fun setEnabled(enabled: Boolean)
+    
+    /**
+     * Get settings as Flow
+     */
+    fun getSettings(): Flow<com.example.shortblocker.data.AppSettings>
 }
