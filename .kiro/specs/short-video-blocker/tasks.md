@@ -220,15 +220,15 @@
     - プラットフォーム別の統計
     - _Requirements: 5.1_
 
-- [ ] 11. 依存性注入のセットアップ
+- [x] 11. 依存性注入のセットアップ
 
-  - [ ] 11.1 DI コンテナの設定（Hilt または Koin）
+  - [x] 11.1 DI コンテナの設定（Hilt または Koin）
 
     - モジュール定義（Database、Repository、Manager、Detector、Action）
     - シングルトンとスコープの設定
     - _Requirements: すべて_
 
-  - [ ] 11.2 各コンポーネントへの DI 統合
+  - [x] 11.2 各コンポーネントへの DI 統合
     - コンストラクタインジェクション
     - ViewModel へのインジェクション
     - AccessibilityService へのインジェクション（手動取得）

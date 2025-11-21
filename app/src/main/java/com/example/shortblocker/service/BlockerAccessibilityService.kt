@@ -4,6 +4,13 @@ import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import com.example.shortblocker.action.BlockActionManager
+import com.example.shortblocker.config.ConfigurationManager
+import com.example.shortblocker.data.SettingsRepository
+import com.example.shortblocker.detector.PlatformDetectorManager
+import com.example.shortblocker.error.ErrorHandler
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 /**
  * AccessibilityService implementation for detecting and blocking short video content.
@@ -13,6 +20,7 @@ import android.view.accessibility.AccessibilityEvent
  * 
  * Requirements: 4.1, 4.2, 4.3
  */
+@AndroidEntryPoint
 class BlockerAccessibilityService : AccessibilityService() {
 
     companion object {
@@ -27,11 +35,29 @@ class BlockerAccessibilityService : AccessibilityService() {
         )
     }
 
-    private var isServiceRunning = false
+    // Injected dependencies
+    @Inject
+    lateinit var eventProcessor: AccessibilityEventProcessor
     
-    // Event processing components (Task 4)
-    private lateinit var eventProcessor: AccessibilityEventProcessor
-    private lateinit var eventDebouncer: PackageEventDebouncer
+    @Inject
+    lateinit var eventDebouncer: EventDebouncer
+    
+    @Inject
+    lateinit var platformDetectorManager: PlatformDetectorManager
+    
+    @Inject
+    lateinit var configurationManager: ConfigurationManager
+    
+    @Inject
+    lateinit var settingsRepository: SettingsRepository
+    
+    @Inject
+    lateinit var errorHandler: ErrorHandler
+    
+    // BlockActionManager needs to be created manually because it requires the service instance
+    private lateinit var blockActionManager: BlockActionManager
+
+    private var isServiceRunning = false
 
     /**
      * Called when the service is connected and ready to receive events.
@@ -43,9 +69,12 @@ class BlockerAccessibilityService : AccessibilityService() {
         Log.i(TAG, "BlockerAccessibilityService connected")
         isServiceRunning = true
         
-        // Initialize event processing components (Task 4)
-        eventProcessor = DefaultAccessibilityEventProcessor(TARGET_PACKAGES)
-        eventDebouncer = PackageEventDebouncer(delayMs = 100L)
+        // Initialize BlockActionManager manually (requires service instance)
+        blockActionManager = BlockActionManager(
+            context = applicationContext,
+            accessibilityService = this,
+            settingsRepository = settingsRepository
+        )
         
         // Configure service info programmatically (in addition to XML config)
         val info = AccessibilityServiceInfo().apply {
@@ -66,7 +95,7 @@ class BlockerAccessibilityService : AccessibilityService() {
         
         serviceInfo = info
         
-        Log.i(TAG, "Service configuration applied")
+        Log.i(TAG, "Service configuration applied with DI components")
     }
 
     /**
@@ -93,17 +122,33 @@ class BlockerAccessibilityService : AccessibilityService() {
                       "class=${event.className}")
         }
 
-        // Debounce events to optimize performance (Task 4.2)
+        // Debounce events to optimize performance and process event
         eventDebouncer.debounce(packageName) {
-            // Process event through AccessibilityEventProcessor (Task 4.1)
-            val appContext = eventProcessor.processEvent(event)
+            processEventInternal(event)
+        }
+    }
+    
+    /**
+     * Internal method to process the event after debouncing
+     */
+    private fun processEventInternal(event: AccessibilityEvent) {
+        // Process event through AccessibilityEventProcessor
+        val appContext = eventProcessor.processEvent(event)
+        
+        if (appContext != null) {
+            Log.d(TAG, "AppContext extracted: ${appContext.packageName}, " +
+                      "nodes=${appContext.nodeTree.size}")
             
-            if (appContext != null) {
-                Log.d(TAG, "AppContext extracted: ${appContext.packageName}, " +
-                          "nodes=${appContext.nodeTree.size}")
+            // Detect short video content through PlatformDetectorManager
+            val detectionResult = platformDetectorManager.detectShortVideo(appContext)
+            
+            if (detectionResult != null && detectionResult.isShortVideo) {
+                Log.i(TAG, "Short video detected: platform=${detectionResult.platform}, " +
+                          "method=${detectionResult.detectionMethod}, " +
+                          "confidence=${detectionResult.confidence}")
                 
-                // TODO: Detect short video content through PlatformDetectorManager (Task 5)
-                // TODO: Execute block action through BlockActionManager (Task 6)
+                // Execute block action through BlockActionManager
+                blockActionManager.executeBlockAction(detectionResult, appContext)
             }
         }
     }
@@ -125,8 +170,10 @@ class BlockerAccessibilityService : AccessibilityService() {
         super.onDestroy()
         isServiceRunning = false
         
-        // Clean up debouncer
-        eventDebouncer.cancelAll()
+        // Clean up block action manager
+        if (::blockActionManager.isInitialized) {
+            blockActionManager.cleanup()
+        }
         
         Log.i(TAG, "BlockerAccessibilityService destroyed")
     }
