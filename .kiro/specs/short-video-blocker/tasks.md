@@ -204,9 +204,9 @@
     - 権限状態のチェックと案内
     - _Requirements: 4.1, 4.5_
 
-- [ ] 10. ViewModel と UI ロジックの実装
+- [x] 10. ViewModel と UI ロジックの実装
 
-  - [ ] 10.1 MainViewModel の実装
+  - [x] 10.1 MainViewModel の実装
 
     - 設定の読み込みと監視（Flow）
     - 設定の更新（プラットフォーム、アクションタイプ）
@@ -214,7 +214,7 @@
     - 一時無効化の実行
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-  - [ ] 10.2 StatisticsManager の実装
+  - [x] 10.2 StatisticsManager の実装
     - BlockLog からの統計計算
     - 日別、週別、月別の集計
     - プラットフォーム別の統計

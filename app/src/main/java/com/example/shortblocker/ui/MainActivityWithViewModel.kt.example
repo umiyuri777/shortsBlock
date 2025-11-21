@@ -1,0 +1,131 @@
+package com.example.shortblocker.ui
+
+import android.os.Bundle
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.example.shortblocker.R
+import com.example.shortblocker.data.BlockActionType
+import com.example.shortblocker.data.Platform
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.checkbox.MaterialCheckBox
+import com.google.android.material.switchmaterial.SwitchMaterial
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+
+/**
+ * Example of how to use MainViewModel in MainActivity
+ * This is a reference implementation showing how to migrate from direct
+ * ConfigurationManager usage to ViewModel-based architecture
+ */
+@AndroidEntryPoint
+class MainActivityWithViewModel : AppCompatActivity() {
+
+    // Inject ViewModel using Hilt
+    private val viewModel: MainViewModel by viewModels()
+
+    private lateinit var serviceToggle: SwitchMaterial
+    private lateinit var youtubeCheckbox: MaterialCheckBox
+    private lateinit var instagramCheckbox: MaterialCheckBox
+    private lateinit var tiktokCheckbox: MaterialCheckBox
+    private lateinit var disableButton: MaterialButton
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        initializeViews()
+        setupListeners()
+        observeUiState()
+    }
+
+    private fun initializeViews() {
+        serviceToggle = findViewById(R.id.serviceToggle)
+        youtubeCheckbox = findViewById(R.id.youtubeCheckbox)
+        instagramCheckbox = findViewById(R.id.instagramCheckbox)
+        tiktokCheckbox = findViewById(R.id.tiktokCheckbox)
+        disableButton = findViewById(R.id.disableButton)
+    }
+
+    private fun setupListeners() {
+        // Service toggle
+        serviceToggle.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.setServiceEnabled(isChecked)
+        }
+
+        // Platform checkboxes
+        youtubeCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.setPlatformEnabled(Platform.YOUTUBE, isChecked)
+        }
+
+        instagramCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.setPlatformEnabled(Platform.INSTAGRAM, isChecked)
+        }
+
+        tiktokCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.setPlatformEnabled(Platform.TIKTOK, isChecked)
+        }
+
+        // Block action type radio buttons
+        findViewById<android.widget.RadioButton>(R.id.overlayRadio).setOnClickListener {
+            viewModel.setBlockActionType(BlockActionType.OVERLAY)
+        }
+
+        findViewById<android.widget.RadioButton>(R.id.navigateBackRadio).setOnClickListener {
+            viewModel.setBlockActionType(BlockActionType.NAVIGATE_BACK)
+        }
+
+        // Temporary disable button
+        disableButton.setOnClickListener {
+            viewModel.setTemporaryDisable(30) // 30 minutes
+        }
+    }
+
+    private fun observeUiState() {
+        // Observe UI state changes
+        lifecycleScope.launch {
+            viewModel.mainUiState.collect { state ->
+                updateUi(state)
+            }
+        }
+    }
+
+    private fun updateUi(state: MainUiState) {
+        // Update service toggle
+        serviceToggle.isChecked = state.settings.isEnabled
+
+        // Update platform checkboxes
+        youtubeCheckbox.isChecked = state.settings.enabledPlatforms.contains(Platform.YOUTUBE)
+        instagramCheckbox.isChecked = state.settings.enabledPlatforms.contains(Platform.INSTAGRAM)
+        tiktokCheckbox.isChecked = state.settings.enabledPlatforms.contains(Platform.TIKTOK)
+
+        // Update block action type
+        when (state.settings.blockActionType) {
+            BlockActionType.OVERLAY -> 
+                findViewById<android.widget.RadioButton>(R.id.overlayRadio).isChecked = true
+            BlockActionType.NAVIGATE_BACK -> 
+                findViewById<android.widget.RadioButton>(R.id.navigateBackRadio).isChecked = true
+            BlockActionType.NOTIFICATION -> 
+                findViewById<android.widget.RadioButton>(R.id.notificationRadio).isChecked = true
+            BlockActionType.COMBINED -> 
+                findViewById<android.widget.RadioButton>(R.id.combinedRadio).isChecked = true
+        }
+
+        // Update statistics
+        findViewById<android.widget.TextView>(R.id.todayBlocksText).text = 
+            getString(R.string.blocks_count, state.todayBlocks)
+        findViewById<android.widget.TextView>(R.id.weekBlocksText).text = 
+            getString(R.string.blocks_count, state.weekBlocks)
+
+        // Update temporary disable status
+        if (state.isTemporarilyDisabled) {
+            disableButton.isEnabled = false
+            findViewById<android.widget.TextView>(R.id.disableStatusText).visibility = 
+                android.view.View.VISIBLE
+        } else {
+            disableButton.isEnabled = true
+            findViewById<android.widget.TextView>(R.id.disableStatusText).visibility = 
+                android.view.View.GONE
+        }
+    }
+}
