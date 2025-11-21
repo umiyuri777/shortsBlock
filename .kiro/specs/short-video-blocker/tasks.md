@@ -63,15 +63,15 @@
     - パフォーマンス最適化
     - _Requirements: 6.1, 6.2_
 
-- [ ] 5. プラットフォーム検出ロジックの実装
+- [x] 5. プラットフォーム検出ロジックの実装
 
-  - [ ] 5.1 PlatformDetector インターフェースの定義
+  - [x] 5.1 PlatformDetector インターフェースの定義
 
     - canHandle、detectShortVideo メソッドの定義
     - 共通の検出ユーティリティメソッド
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
 
-  - [ ] 5.2 YouTubeDetector の実装
+  - [x] 5.2 YouTubeDetector の実装
 
     - UI 要素検出（resource-id: "shorts_player_fragment"など）
     - URL パターン検出（"/shorts/"）
@@ -79,20 +79,20 @@
     - 優先度ベースの検出ロジック
     - _Requirements: 1.1, 1.4, 3.1_
 
-  - [ ] 5.3 InstagramDetector の実装
+  - [x] 5.3 InstagramDetector の実装
 
     - UI 要素検出（resource-id: "clips_viewer_view_pager"など）
     - Reels タブ検出
     - Activity 名検出
     - _Requirements: 1.2, 1.5, 3.2_
 
-  - [ ] 5.4 TikTokDetector の実装
+  - [x] 5.4 TikTokDetector の実装
 
     - パッケージ名による検出
     - アプリ起動の検出
     - _Requirements: 3.3_
 
-  - [ ] 5.5 PlatformDetectorManager の実装
+  - [x] 5.5 PlatformDetectorManager の実装
     - 複数の Detector の管理
     - 適切な Detector の選択とディスパッチ
     - 設定に基づくプラットフォームの有効/無効化
