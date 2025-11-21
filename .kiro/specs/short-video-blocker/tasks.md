@@ -99,15 +99,15 @@
     - エラーハンドリングとフォールバック
     - _Requirements: 1.1, 1.2, 1.3, 3.4, 7.2_
 
-- [ ] 6. ブロックアクション機能の実装
+- [x] 6. ブロックアクション機能の実装
 
-  - [ ] 6.1 BlockAction インターフェースの定義
+  - [x] 6.1 BlockAction インターフェースの定義
 
     - execute メソッドの定義
     - 共通のアクションユーティリティ
     - _Requirements: 2.1, 2.2, 2.3_
 
-  - [ ] 6.2 OverlayBlockAction の実装
+  - [x] 6.2 OverlayBlockAction の実装
 
     - WindowManager を使用したオーバーレイ表示
     - TYPE_ACCESSIBILITY_OVERLAY の使用
@@ -115,20 +115,20 @@
     - 自動消去タイマー
     - _Requirements: 2.2, 2.3, 5.3_
 
-  - [ ] 6.3 NavigateBackAction の実装
+  - [x] 6.3 NavigateBackAction の実装
 
     - performGlobalAction(GLOBAL_ACTION_BACK)の使用
     - 簡易通知の表示
     - _Requirements: 2.1, 2.3, 2.4_
 
-  - [ ] 6.4 NotificationAction の実装
+  - [x] 6.4 NotificationAction の実装
 
     - NotificationManager を使用した通知表示
     - 通知チャンネルの作成（Android 8.0+）
     - 通知内容のカスタマイズ
     - _Requirements: 2.2, 5.3_
 
-  - [ ] 6.5 BlockActionManager の実装
+  - [x] 6.5 BlockActionManager の実装
     - アクションタイプに基づく適切なアクションの実行
     - 複合アクション（オーバーレイ + 通知）のサポート
     - エラーハンドリングとフォールバック

@@ -2,4 +2,10 @@
 <resources>
     <string name="app_name">Short Video Blocker</string>
     <string name="accessibility_service_description">This service monitors YouTube, Instagram, and TikTok to detect and block short video content (Shorts, Reels, etc.). It does not collect personal information or access content from other apps.</string>
+    
+    <!-- Block overlay strings -->
+    <string name="short_video_blocked">Short Video Blocked</string>
+    <string name="block_message">This content is restricted by your settings</string>
+    <string name="go_back">Go Back</string>
+    <string name="disable_30_min">Disable 30min</string>
 </resources>
