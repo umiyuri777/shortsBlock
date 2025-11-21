@@ -150,23 +150,23 @@
     - 通知による状態表示
     - _Requirements: 5.5_
 
-- [ ] 8. エラーハンドリングとロギングの実装
+- [x] 8. エラーハンドリングとロギングの実装
 
-  - [ ] 8.1 ErrorHandler の実装
+  - [x] 8.1 ErrorHandler の実装
 
     - BlockerError の sealed class 定義
     - エラーカテゴリ別の処理（Permission、Detection、Action）
     - ユーザー通知ロジック
     - _Requirements: 7.1, 7.2, 7.3_
 
-  - [ ] 8.2 SafeModeManager の実装
+  - [x] 8.2 SafeModeManager の実装
 
     - 連続エラーの検出
     - セーフモードへの自動切り替え
     - クールダウン期間後の復帰
     - _Requirements: 7.4_
 
-  - [ ] 8.3 ログ記録機能の実装
+  - [x] 8.3 ログ記録機能の実装
     - BlockLogEntity へのログ保存
     - デバッグログとリリースログの分離
     - ログのローテーション（古いログの削除）
