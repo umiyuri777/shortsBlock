@@ -1,12 +1,14 @@
 package com.example.shortblocker.ui
 
 import android.Manifest
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.view.accessibility.AccessibilityManager
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.app.NotificationManagerCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -29,14 +31,77 @@ class PermissionHelper(private val activity: Activity) {
 
     /**
      * AccessibilityServiceが有効かチェック
+     * 
+     * 以下の2つの条件を確認します：
+     * 1. Accessibility Service全体が有効になっているか
+     * 2. このアプリのAccessibility Serviceが有効になっているか
+     * 
+     * 複数の方法で確認し、いずれかで有効と判定されればtrueを返します。
      */
     fun isAccessibilityServiceEnabled(): Boolean {
-        val serviceName = "${activity.packageName}/.service.BlockerAccessibilityService"
-        val enabledServices = Settings.Secure.getString(
-            activity.contentResolver,
-            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        // 1. Accessibility Service全体が有効かチェック
+        val accessibilityEnabled = try {
+            Settings.Secure.getInt(
+                activity.contentResolver,
+                Settings.Secure.ACCESSIBILITY_ENABLED,
+                0
+            ) == 1
+        } catch (e: Exception) {
+            false
+        }
+        
+        if (!accessibilityEnabled) {
+            return false
+        }
+        
+        // 2. このアプリのサービスが有効になっているかチェック
+        // 方法1: AccessibilityManagerを使用（最も確実）
+        val accessibilityManager = activity.getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager
+        val enabledServicesList = accessibilityManager?.getEnabledAccessibilityServiceList(
+            AccessibilityServiceInfo.FEEDBACK_ALL_MASK
+        ) ?: emptyList()
+        
+        // サービスIDの複数の形式をチェック
+        val serviceIdVariants = listOf(
+            "${activity.packageName}/${activity.packageName}.service.BlockerAccessibilityService",
+            "${activity.packageName}/.service.BlockerAccessibilityService",
+            "${activity.packageName}:${activity.packageName}.service.BlockerAccessibilityService",
+            "${activity.packageName}:.service.BlockerAccessibilityService"
         )
-        return enabledServices?.contains(serviceName) == true
+        
+        // AccessibilityManagerで確認
+        val foundInManager = enabledServicesList.any { serviceInfo ->
+            serviceIdVariants.any { serviceId ->
+                serviceInfo.id == serviceId || serviceInfo.id.endsWith(serviceId)
+            } || serviceInfo.id.contains("BlockerAccessibilityService")
+        }
+        
+        if (foundInManager) {
+            return true
+        }
+        
+        // 方法2: Settings.Secureを使用（フォールバック）
+        val enabledServices = try {
+            Settings.Secure.getString(
+                activity.contentResolver,
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+            ) ?: ""
+        } catch (e: Exception) {
+            ""
+        }
+        
+        // サービス名の複数の形式に対応（コロン区切り、スラッシュ区切りなど）
+        val serviceNameVariants = listOf(
+            "${activity.packageName}/.service.BlockerAccessibilityService",
+            "${activity.packageName}/${activity.packageName}.service.BlockerAccessibilityService",
+            "${activity.packageName}:.service.BlockerAccessibilityService",
+            "${activity.packageName}:${activity.packageName}.service.BlockerAccessibilityService"
+        )
+        
+        // いずれかの形式で一致するかチェック
+        return serviceNameVariants.any { variant ->
+            enabledServices.contains(variant)
+        }
     }
 
     /**
